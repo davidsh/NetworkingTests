@@ -13,7 +13,7 @@ namespace negserver
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("usage: negserver <port>");
+                Console.WriteLine("usage: negserver <listeningPort>");
                 return;
             }
 
