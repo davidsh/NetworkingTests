@@ -55,7 +55,7 @@ namespace negserver
             {
                 authStream.AuthenticateAsServer(
                     CredentialCache.DefaultNetworkCredentials,
-                    ProtectionLevel.None,
+                    ProtectionLevel.EncryptAndSign,
                     TokenImpersonationLevel.Identification);
 
                 DisplayProperties(authStream);

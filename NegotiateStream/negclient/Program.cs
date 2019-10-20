@@ -10,49 +10,66 @@ namespace negclient
 {
     public class Program
     {
-        static TcpClient client = null;
-
         public static void Main(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length < 3 || args.Length == 4)
             {
-                Console.WriteLine("usage: negclient <serverHostNameOrIPAddress> <port> <targetName>");
+                DisplayUsage();
                 return;
             }
 
             string server = args[0];
             int port = int.Parse(args[1]);
             string target = args[2];
+            string userName = null;
+            string password = null;
+            string domain = null;
 
-            client = new TcpClient();
-            client.Connect(server, port);
-            Console.WriteLine($"Client connected to {server}:{port}");
+            if (args.Length > 3)
+            {
+                userName = args[3];
+                password = args[4];
+                if (args.Length == 6) domain = args[5];
+            }
 
-            // Ensure the client does not close when there is still data to be sent to the server.
-            client.LingerState = (new LingerOption(true, 0));
+            try
+            {
+                var client = new TcpClient();
+                client.Connect(server, port);
+                Console.WriteLine($"Client connected to {server}:{port}");
 
-            // Request authentication.
-            NetworkStream clientStream = client.GetStream();
-            var authStream = new NegotiateStream(clientStream, false);
-            Console.Write("Client waiting for authentication...");
-            authStream.AuthenticateAsClient(
-                CredentialCache.DefaultNetworkCredentials,
-                target,
-                ProtectionLevel.EncryptAndSign,
-                TokenImpersonationLevel.Identification);
-            Console.WriteLine("done.");
-            DisplayProperties(authStream);
+                // Ensure the client does not close when there is still data to be sent to the server.
+                client.LingerState = new LingerOption(true, 0);
 
-            // Send a message to the server.
-            var writer = new StreamWriter(authStream);
-            var clientMessage = new string('A', 65536);
-            byte[] message = Encoding.UTF8.GetBytes(clientMessage);
-            authStream.Write(message, 0, message.Length);
-            Console.WriteLine("Sent {0} bytes.", message.Length);
+                // Request authentication.
+                NetworkStream clientStream = client.GetStream();
+                var authStream = new NegotiateStream(clientStream, false);
+                var credential = (userName == null) ? CredentialCache.DefaultNetworkCredentials :
+                    new NetworkCredential(userName, password, domain);
+                Console.Write("Client waiting for authentication...");
+                authStream.AuthenticateAsClient(
+                    credential,
+                    target,
+                    ProtectionLevel.EncryptAndSign,
+                    TokenImpersonationLevel.Identification);
+                Console.WriteLine("done.");
+                DisplayProperties(authStream);
 
-            // Close the client connection.
-            authStream.Close();
-            Console.WriteLine("Closing client.");
+                // Send a message to the server.
+                var writer = new StreamWriter(authStream);
+                var clientMessage = new string('A', 65536);
+                byte[] message = Encoding.UTF8.GetBytes(clientMessage);
+                authStream.Write(message, 0, message.Length);
+                Console.WriteLine("Sent {0} bytes.", message.Length);
+
+                // Close the client connection.
+                authStream.Close();
+                Console.WriteLine("Closing client.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
         public static void DisplayProperties(NegotiateStream stream)
         {
@@ -65,6 +82,12 @@ namespace negclient
             Console.WriteLine("ServerIdentity.AuthenticationType: {0}", stream.RemoteIdentity.AuthenticationType);
             Console.WriteLine("ServerIdentity.IsAuthenticated: {0}", stream.RemoteIdentity.IsAuthenticated);
             Console.WriteLine("ServerIdentity.Name: {0}", stream.RemoteIdentity.Name);
+        }
+
+        public static void DisplayUsage()
+        {
+            Console.WriteLine("usage: negclient <serverHostNameOrIPAddress> <port> <targetName> [ <username> <password> [domain] ]");
+            Console.WriteLine("       if no username/password is specified then DefaultNetworkCredentials is used.");
         }
     }
 }
