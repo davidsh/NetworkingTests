@@ -1,0 +1,1 @@
+uint32_t ClientTest(int useKerb, char* userName, char* password);
