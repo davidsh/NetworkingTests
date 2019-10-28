@@ -19,7 +19,7 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
     majorStatus = gss_import_name(&minorStatus, &gssBuffer, GSS_C_NT_HOSTBASED_SERVICE, &gssNameTargetNt);
     if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_import_name", majorStatus, minorStatus);
         return FAIL;
     }
     gssBuffer.length = strlen(targetKerb);
@@ -28,7 +28,7 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
     majorStatus = gss_import_name(&minorStatus, &gssBuffer, GSS_KRB5_NT_PRINCIPAL_NAME, &gssNameTargetKerb);
     if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_import_name", majorStatus, minorStatus);
         return FAIL;
     }
 
@@ -38,8 +38,6 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
     gss_buffer_desc clientToken = { 0 };
     gss_buffer_desc serverToken = { 0 };
     gss_OID_desc* outmech;
-    gss_OID_desc oidMechNtlm = { .length = ARRAY_SIZE(gss_ntlm_oid_value) - 1, .elements = gss_ntlm_oid_value };
-    gss_OID_desc oidMechSpnego = { .length = ARRAY_SIZE(gss_spnego_oid_value) - 1, .elements = gss_spnego_oid_value };
     gss_ctx_id_t clientContextHandle = GSS_C_NO_CONTEXT;
 
     // Build a set of 2 oids.
@@ -47,25 +45,25 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
     majorStatus = gss_create_empty_oid_set(&minorStatus, &mechSetBoth);
     if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_create_empty_oid_set", majorStatus, minorStatus);
         return FAIL;
     }
-    majorStatus = gss_add_oid_set_member(&minorStatus, &oidMechSpnego, &mechSetBoth);
+    majorStatus = gss_add_oid_set_member(&minorStatus, &GSS_SPNEGO_MECHANISM, &mechSetBoth);
     if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_add_oid_set_member", majorStatus, minorStatus);
         return FAIL;
     }
-    majorStatus = gss_add_oid_set_member(&minorStatus, &oidMechNtlm, &mechSetBoth);
+    majorStatus = gss_add_oid_set_member(&minorStatus, &GSS_NTLM_MECHANISM, &mechSetBoth);
     if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_add_oid_set_member", majorStatus, minorStatus);
         return FAIL;
     }
 
     // Build client credential.
     gss_cred_id_t clientCredential = NULL;
-    if (!CreateClientCredential(userName, password, &clientCredential)) return FAIL;
+    if (!CreateClientCredential(userName, password, 0, &clientCredential)) return FAIL;
 
     // Client builds the first token.
     gss_name_t gssClientName;
@@ -74,7 +72,7 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
                                        clientCredential,
                                        &clientContextHandle,
                                        gssClientName,
-                                       &oidMechSpnego,
+                                       &GSS_SPNEGO_MECHANISM,
                                        reqFlags,
                                        0,
                                        GSS_C_NO_CHANNEL_BINDINGS,
@@ -90,7 +88,7 @@ uint32_t ClientTest(int useKerb, char* userName, char* password)
     }
     else if (majorStatus != GSS_S_CONTINUE_NEEDED)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_init_sec_context", majorStatus, minorStatus);
         return FAIL;
     }
 

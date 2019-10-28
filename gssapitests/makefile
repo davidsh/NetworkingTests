@@ -1,22 +1,31 @@
-all: gssapitests
+OBJDIR=obj
+BINDIR=bin
 
-gssapitests: main.o helpers.o ntlmtest.o spnegotest.o client.o
-	gcc -g -o gssapitests main.o helpers.o ntlmtest.o spnegotest.o client.o -lgssapi_krb5
+all: $(BINDIR)/gssapitests
 
-main.o: main.c
-	gcc -g -c main.c
+$(BINDIR)/gssapitests: $(OBJDIR)/main.o $(OBJDIR)/helpers.o $(OBJDIR)/ntlmtest.o $(OBJDIR)/spnegotest.o $(OBJDIR)/client.o
+	mkdir -p bin
+	gcc -g -o $(BINDIR)/gssapitests $(OBJDIR)/main.o $(OBJDIR)/helpers.o $(OBJDIR)/ntlmtest.o $(OBJDIR)/spnegotest.o $(OBJDIR)/client.o -lgssapi_krb5
 
-helpers.o: helpers.c
-	gcc -g -c helpers.c
+$(OBJDIR)/main.o: main.c
+	mkdir -p obj
+	gcc -g -c main.c -o $(OBJDIR)/main.o
 
-ntlmtest.o: ntlmtest.c
-	gcc -g -c ntlmtest.c
+$(OBJDIR)/helpers.o: helpers.c
+	mkdir -p obj
+	gcc -g -c helpers.c -o $(OBJDIR)/helpers.o
 
-spnegotest.o: spnegotest.c
-	gcc -g -c spnegotest.c
+$(OBJDIR)/ntlmtest.o: ntlmtest.c
+	mkdir -p obj
+	gcc -g -c ntlmtest.c -o $(OBJDIR)/ntlmtest.o
 
-client.o: client.c
-	gcc -g -c client.c
+$(OBJDIR)/spnegotest.o: spnegotest.c
+	mkdir -p obj
+	gcc -g -c spnegotest.c -o $(OBJDIR)/spnegotest.o
+
+$(OBJDIR)/client.o: client.c
+	mkdir -p obj
+	gcc -g -c client.c -o $(OBJDIR)/client.o
 
 clean:
-	rm main.o helpers.o ntlmtest.o spnegotest.o client.o gssapitests
+	rm -rf $(BINDIR) $(OBJDIR)

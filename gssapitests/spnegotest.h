@@ -2,4 +2,4 @@
 
 #include <stdint.h>
 
-uint32_t TestSpnegoLoop(char* userName, char* password);
+uint32_t TestSpnegoLoop(char* userName, char* password, char* spnTarget);

@@ -7,228 +7,146 @@
 #include "helpers.h"
 #include "spnegotest.h"
 
-uint32_t TestSpnegoLoop(char* userName, char* password)
+uint32_t TestSpnegoLoop(char* userName, char* password, char* spnTarget)
 {
     uint32_t majorStatus = 0;
     uint32_t minorStatus = 0;
-    char* hostServer = "TESTHOST@testfqdn.test.corefx.net";
-    char* targetServer = "TESTHOST/testfqdn.test.corefx.net";
 
-    gss_buffer_desc gssBuffer = {.length = strlen(hostServer), .value = hostServer};
+    char* host = ConvertToHostBasedServiceFormat(spnTarget); // TODO: free this string
     gss_name_t gssNameSpnNt = NULL;
-    majorStatus = gss_import_name(&minorStatus, &gssBuffer, GSS_C_NT_HOSTBASED_SERVICE, &gssNameSpnNt);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-    gssBuffer.length = strlen(targetServer);
-    gssBuffer.value = targetServer;
+    if (!CreateNameObject(host, GSS_C_NT_HOSTBASED_SERVICE, &gssNameSpnNt)) return FAIL;
+
     gss_name_t gssNameSpn = NULL;
-    majorStatus = gss_import_name(&minorStatus, &gssBuffer, GSS_KRB5_NT_PRINCIPAL_NAME, &gssNameSpn);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
+    if (!CreateNameObject(spnTarget, GSS_KRB5_NT_PRINCIPAL_NAME, &gssNameSpn)) return FAIL;
 
     uint32_t reqFlags = GSS_C_CONF_FLAG | GSS_C_INTEG_FLAG;
     uint32_t retFlags;
 
     gss_buffer_desc clientToken = { 0 };
     gss_buffer_desc serverToken = { 0 };
-    gss_OID_desc* outmech;
-    gss_OID_desc oidMechNtlm = { .length = ARRAY_SIZE(gss_ntlm_oid_value) - 1, .elements = gss_ntlm_oid_value };
-    gss_OID_desc oidMechSpnego = { .length = ARRAY_SIZE(gss_spnego_oid_value) - 1, .elements = gss_spnego_oid_value };
     gss_ctx_id_t clientContextHandle = GSS_C_NO_CONTEXT;
-
-    // Build a set of 2 oids.
-    gss_OID_set mechSetBoth = NULL;
-    majorStatus = gss_create_empty_oid_set(&minorStatus, &mechSetBoth);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-    majorStatus = gss_add_oid_set_member(&minorStatus, &oidMechSpnego, &mechSetBoth);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-    majorStatus = gss_add_oid_set_member(&minorStatus, &oidMechNtlm, &mechSetBoth);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
 
     // Build client credential.
     gss_cred_id_t clientCredential = NULL;
-    if (!CreateClientCredential(userName, password, &clientCredential)) return FAIL;
-
-    gss_OID_set_desc mechSetNtlm = {.count = 1, .elements = &oidMechNtlm};
-    gss_OID_set_desc mechSetSpnego = {.count = 1, .elements = &oidMechSpnego};
-
-    // Client builds the first token.
-    gss_name_t gssClientName = gssNameSpn;
-    retryInitSec: majorStatus = gss_init_sec_context(&minorStatus,
-                                       clientCredential,
-                                       &clientContextHandle,
-                                       gssClientName,
-                                       &oidMechSpnego,
-                                       reqFlags,
-                                       0,
-                                       GSS_C_NO_CHANNEL_BINDINGS,
-                                       &serverToken,
-                                       &outmech,
-                                       &clientToken,
-                                       &retFlags,
-                                       NULL);
-    if (majorStatus == GSS_S_BAD_NAMETYPE)
+    if (userName == NULL)
     {
-        gssClientName = gssNameSpnNt;
-        goto retryInitSec;
+        if (!CreateClientDefaultCredential(&clientCredential)) return FAIL;
     }
-    else if (majorStatus != GSS_S_CONTINUE_NEEDED)
+    else
     {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
+        if (!CreateClientCredential(userName, password, 0, &clientCredential)) return FAIL;
     }
+    
 
-    // Build server credential.
-    gss_cred_id_t serverCredentialSpn = NULL;
-    gss_OID_set actualMech = NULL;
-    majorStatus = gss_acquire_cred(&minorStatus, gssNameSpn, GSS_C_INDEFINITE,
-                           &mechSetSpnego, GSS_C_ACCEPT, &serverCredentialSpn,
-                           &actualMech, NULL);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-    gss_cred_id_t serverCredentialSpnNt = NULL;
-    actualMech = NULL;
-    majorStatus = gss_acquire_cred(&minorStatus, gssNameSpnNt, GSS_C_INDEFINITE,
-                           mechSetBoth, GSS_C_ACCEPT, &serverCredentialSpnNt,
-                           &actualMech, NULL);
-    if (majorStatus != GSS_S_COMPLETE)
-    {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-
-    // Server accepts inital client token and generates a token for the client.
-    gss_cred_id_t serverCredential = serverCredentialSpn;
     gss_ctx_id_t serverContextHandle = GSS_C_NO_CONTEXT;
-    gss_OID mechType = GSS_C_NO_OID;
-    retryAcceptSec: majorStatus = gss_accept_sec_context(&minorStatus,
-                                         &serverContextHandle,
-                                         serverCredential,
-                                         &clientToken,
-                                         GSS_C_NO_CHANNEL_BINDINGS,
-                                         NULL,
-                                         &mechType,
-                                         &serverToken,
-                                         &retFlags,
-                                         NULL,
-                                         NULL);
-    if (majorStatus == GSS_S_BAD_MECH || majorStatus == GSS_S_NO_CRED)
+    gss_name_t gssClientName = gssNameSpn;
+
+    // Build server credential. The NTLM provider requires a non-null credential.
+    gss_cred_id_t serverCredential = GSS_C_NO_CREDENTIAL;
+    majorStatus = gss_acquire_cred(&minorStatus,
+                                   GSS_C_NO_NAME,
+                                   GSS_C_INDEFINITE,
+                                   GSS_C_NO_OID_SET,
+                                   GSS_C_ACCEPT,
+                                   &serverCredential,
+                                   NULL,
+                                   NULL);
+    if (majorStatus != GSS_S_COMPLETE)
     {
-        serverCredential = serverCredentialSpnNt;
-        goto retryAcceptSec;
-    }
-    else if (majorStatus == GSS_S_COMPLETE)
-    {
-        goto done;
-    }
-    else if (majorStatus != GSS_S_CONTINUE_NEEDED)
-    {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_acquire_cred", majorStatus, minorStatus);
         return FAIL;
     }
 
-    // Client processes server token (again) and generates a response.
-    majorStatus = gss_init_sec_context(&minorStatus,
-                                       clientCredential,
-                                       &clientContextHandle,
-                                       gssClientName,
-                                       &oidMechSpnego,
-                                       reqFlags,
-                                       0,
-                                       GSS_C_NO_CHANNEL_BINDINGS,
-                                       &serverToken,
-                                       &outmech,
-                                       &clientToken,
-                                       &retFlags,
-                                       NULL);
-    if (majorStatus != GSS_S_COMPLETE && majorStatus != GSS_S_CONTINUE_NEEDED)
+    gss_OID actualClientMech = GSS_C_NO_OID;
+    gss_OID actualServerMech = GSS_C_NO_OID;
+    uint32_t clientDone = 0;
+    uint32_t serverDone = 0;
+    uint32_t clientRetryCount = 0;
+    while (!clientDone || !serverDone)
     {
-        DisplayStatus(majorStatus, minorStatus);
-        return FAIL;
-    }
-
-    // Server receives final client token and determines whether server is done with handshake.
-    mechType = GSS_C_NO_OID;
-    majorStatus = gss_accept_sec_context(&minorStatus,
-                                         &serverContextHandle,
-                                         serverCredential,
-                                         &clientToken,
-                                         GSS_C_NO_CHANNEL_BINDINGS,
-                                         NULL,
-                                         &mechType,
-                                         &serverToken,
-                                         &retFlags,
-                                         NULL,
-                                         NULL);
-    if (majorStatus == GSS_S_CONTINUE_NEEDED)
-    {
-        // Client processes server token (again) and generates a response.
-        majorStatus = gss_init_sec_context(&minorStatus,
-                                        clientCredential,
-                                        &clientContextHandle,
-                                        gssClientName,
-                                        &oidMechSpnego,
-                                        reqFlags,
-                                        0,
-                                        GSS_C_NO_CHANNEL_BINDINGS,
-                                        &serverToken,
-                                        &outmech,
-                                        &clientToken,
-                                        &retFlags,
-                                        NULL);
-        if (majorStatus != GSS_S_COMPLETE)
+        if (!clientDone)
         {
-            DisplayStatus(majorStatus, minorStatus);
-            return FAIL;
+            retryInitSec:
+            majorStatus = gss_init_sec_context(&minorStatus,
+                                               //(userName == NULL) ? GSS_C_NO_CREDENTIAL : clientCredential,
+                                               clientCredential,
+                                               &clientContextHandle,
+                                               gssClientName,
+                                               &GSS_SPNEGO_MECHANISM,
+                                               reqFlags,
+                                               0,
+                                               GSS_C_NO_CHANNEL_BINDINGS,
+                                               &serverToken,
+                                               &actualClientMech,
+                                               &clientToken,
+                                               &retFlags,
+                                               NULL);
+            if (majorStatus == GSS_S_COMPLETE)
+            {
+                clientDone = 1;
+            }
+            else if (majorStatus != GSS_S_CONTINUE_NEEDED)
+            {
+                if (clientContextHandle == GSS_C_NO_CONTEXT && !clientRetryCount)
+                {
+                    // Attempt SPNEGO NTLM fallback by using GSS_C_NT_HOSTBASED_SERVICE
+                    // format of SPN target name.
+                    clientRetryCount++;
+                    gssClientName = gssNameSpnNt;
+                    goto retryInitSec;
+                }
+
+                DisplayStatus("gss_init_sec_context", majorStatus, minorStatus);
+                return FAIL;
+            }
         }
 
-        // Server receives final client token and determines whether server is done with handshake.
-        mechType = GSS_C_NO_OID;
-        majorStatus = gss_accept_sec_context(&minorStatus,
-                                            &serverContextHandle,
-                                            serverCredential,
-                                            &clientToken,
-                                            GSS_C_NO_CHANNEL_BINDINGS,
-                                            NULL,
-                                            &mechType,
-                                            &serverToken,
-                                            &retFlags,
-                                            NULL,
-                                            NULL);
-        if (majorStatus !=  GSS_S_COMPLETE)
+        if (!serverDone)
         {
-            DisplayStatus(majorStatus, minorStatus);
-            return FAIL;
+            retryAcceptSec:
+            majorStatus = gss_accept_sec_context(&minorStatus,
+                                                 &serverContextHandle,
+                                                 serverCredential,
+                                                 &clientToken,
+                                                 GSS_C_NO_CHANNEL_BINDINGS,
+                                                 NULL,
+                                                 &actualServerMech,
+                                                 &serverToken,
+                                                 &retFlags,
+                                                 NULL,
+                                                 NULL);
+            if (majorStatus == GSS_S_COMPLETE)
+            {
+                serverDone = 1;
+            }
+            else if (majorStatus != GSS_S_CONTINUE_NEEDED)
+            {
+                DisplayStatus("gss_accept_sec_context", majorStatus, minorStatus);
+                return FAIL;
+            }
         }
     }
-    else if (majorStatus !=  GSS_S_COMPLETE)
+
+    PrintContext(clientContextHandle);
+    printf("Client Mechanism:");
+    PrintMechanism(actualClientMech);
+    PrintContext(serverContextHandle);
+    printf("Server Mechanism:");
+    PrintMechanism(actualServerMech);
+
+    // Cleanup.
+    majorStatus = gss_release_cred(&minorStatus, &clientCredential);
+    if (majorStatus != GSS_S_COMPLETE)
     {
-        DisplayStatus(majorStatus, minorStatus);
+        DisplayStatus("gss_release_cred", majorStatus, minorStatus);
         return FAIL;
     }
-
-    done: PrintContext(serverContextHandle);
+    majorStatus = gss_release_cred(&minorStatus, &serverCredential);
+    if (majorStatus != GSS_S_COMPLETE)
+    {
+        DisplayStatus("gss_release_cred", majorStatus, minorStatus);
+        return FAIL;
+    }
 
     return PASS;
 }
