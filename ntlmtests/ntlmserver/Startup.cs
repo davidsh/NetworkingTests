@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
@@ -35,14 +37,23 @@ namespace ntlmserver
             }
 
             app.UseAuthentication();
-            app.UseAuthorization();
             app.UseRouting();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Hello World!");
+                    await context.Response.WriteAsync($"Hello {context.User.Identity.Name}");
+                });
+
+                endpoints.MapGet("/outbound", async context =>
+                {
+                    var handler = new HttpClientHandler();
+                    handler.Credentials = new NetworkCredential("user2", "passworda");
+                    var client = new HttpClient(handler);
+                    string result = await client.GetStringAsync("http://localhost/");
+                    await context.Response.WriteAsync($"Result =  {result}");
                 });
             });
         }

@@ -21,10 +21,6 @@ namespace ntlmserver
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseKestrel(options =>
-                            {
-                                options.Listen(IPAddress.Loopback, 5000);
-                            });
                     webBuilder.UseStartup<Startup>();
                 });
     }
