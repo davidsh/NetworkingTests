@@ -30,7 +30,7 @@ uint32_t TestSpnegoLoop(char* userName, char* password, char* spnTarget)
     gss_cred_id_t clientCredential = NULL;
     if (userName == NULL)
     {
-        if (!CreateClientDefaultCredential(&clientCredential)) return FAIL;
+        //if (!CreateClientDefaultCredential(&clientCredential)) return FAIL;
     }
     else
     {
@@ -68,7 +68,6 @@ uint32_t TestSpnegoLoop(char* userName, char* password, char* spnTarget)
         {
             retryInitSec:
             majorStatus = gss_init_sec_context(&minorStatus,
-                                               //(userName == NULL) ? GSS_C_NO_CREDENTIAL : clientCredential,
                                                clientCredential,
                                                &clientContextHandle,
                                                gssClientName,
@@ -89,6 +88,7 @@ uint32_t TestSpnegoLoop(char* userName, char* password, char* spnTarget)
             {
                 if (clientContextHandle == GSS_C_NO_CONTEXT && !clientRetryCount)
                 {
+                    DisplayStatus("gss_init_sec_context (interim error)", majorStatus, minorStatus);
                     // Attempt SPNEGO NTLM fallback by using GSS_C_NT_HOSTBASED_SERVICE
                     // format of SPN target name.
                     clientRetryCount++;

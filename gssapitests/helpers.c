@@ -155,7 +155,7 @@ uint32_t CreateClientDefaultCredential(gss_cred_id_t* clientCredential)
     gss_OID_set_desc mechSetKrb5 = { .count = 1, .elements = &GSS_KRB5_MECHANISM };
 
     majorStatus = gss_acquire_cred(&minorStatus,
-                                   GSS_C_NO_NAME, // TODO: This is bad. We need to inherit the username of the kinit'd ticket if present.
+                                   GSS_C_NO_NAME, // TODO: This is bad? We need to inherit the username of the kinit'd ticket if present.
                                    0,
                                    &mechSetKrb5,
                                    GSS_C_INITIATE,
