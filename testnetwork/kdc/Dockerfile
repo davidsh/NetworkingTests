@@ -1,21 +1,18 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-bionic
 
-WORKDIR /etc/krb5kdc
-COPY kdc.conf .
+# environment variables
+ENV DEBIAN_FRONTEND noninteractive
 
-WORKDIR /etc
-COPY krb5.conf .
+COPY ./kdc/kadm5.acl /etc/krb5kdc/
+COPY ./kdc/kdc.conf /etc/krb5kdc/
+COPY ./common/krb5.conf /etc/
 
 WORKDIR /setup
-COPY ntlm_user_file .
-COPY setup-kdc.sh .
+COPY ./kdc/setup-kdc.sh .
 RUN chmod +x setup-kdc.sh
 RUN ./setup-kdc.sh
 
-ENV NTLM_USER_FILE=/setup/ntlm_user_file
-
-COPY run.sh .
-
-RUN mkdir /patch
+COPY ./kdc/run.sh .
+RUN chmod +x run.sh
 
 ENTRYPOINT ["/bin/bash", "/setup/run.sh"]

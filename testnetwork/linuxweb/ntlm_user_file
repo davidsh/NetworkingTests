@@ -1,3 +1,3 @@
 LINUX:user1:password
 LINUX:user2:password
-LINUX:user3ntlm:password
+LINUX:ntlmonly:password

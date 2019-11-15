@@ -1,10 +1,15 @@
-all: spncheck.exe
+OBJDIR=obj
+BINDIR=bin
 
-spncheck.exe: main.o
-	gcc -g -o spncheck main.o -lgssapi_krb5
+all: $(BINDIR)/spncheck.exe
 
-main.o: main.c
-	gcc -g -c main.c
+$(BINDIR)/spncheck.exe: $(OBJDIR)/main.o
+	mkdir -p $(BINDIR)
+	gcc -g -o $(BINDIR)/spncheck $(OBJDIR)/main.o -lgssapi_krb5
+
+$(OBJDIR)/main.o: main.c
+	mkdir -p $(OBJDIR)
+	gcc -g -c main.c -o $(OBJDIR)/main.o
      
 clean:
-	rm main.o spncheck
+	rm -rf $(BINDIR) $(OBJDIR)
