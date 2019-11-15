@@ -1,0 +1,26 @@
+version: "3.5"
+
+services:
+  kdc:
+    build: ./kdc
+    image: kdc:0.1
+    container_name: kdc
+    hostname: kdc
+    domainname: linux.contoso.com
+    dns_search: linux.contoso.com
+    networks:
+          - network1
+
+  linux1:
+    build: ./linux1
+    image: linux1:0.1
+    container_name: linux1
+    hostname: linux1
+    domainname: linux.contoso.com
+    dns_search: linux.contoso.com
+    networks:
+          - network1
+
+networks:
+  network1:
+    name: linux.contoso.com

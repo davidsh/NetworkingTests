@@ -15,6 +15,7 @@ RUN ./setup-kdc.sh
 ENV NTLM_USER_FILE=/setup/ntlm_user_file
 
 COPY run.sh .
+RUN chmod +x run.sh
 
 RUN mkdir /patch
 

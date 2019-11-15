@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# Install KDC and NTLM support
+# Install KDC
 apt-get update && \
-    apt-get install -y --no-install-recommends krb5-kdc krb5-admin-server gss-ntlmssp && \
+    apt-get install -y --no-install-recommends krb5-kdc krb5-admin-server && \
     apt-get clean
 
 # Create Kerberos database
@@ -32,4 +32,3 @@ kadmin.local ktadd -norandkey HTTP/localhost
 # Fix permissions
 chmod 644 /etc/krb5.keytab
 chmod 644 /etc/krb5kdc/kdc.conf /etc/krb5.conf
-chmod 644 ntlm_user_file
