@@ -2,7 +2,7 @@
 
 # Install KDC
 apt-get update && \
-    apt-get install -y --no-install-recommends krb5-kdc krb5-admin-server && \
+    apt-get install -y --no-install-recommends krb5-kdc krb5-admin-server iputils-ping dnsutils && \
     apt-get clean
 
 # Create Kerberos database
@@ -22,6 +22,7 @@ kadmin.local -q "add_principal -pw password HOST/localhost"
 kadmin.local -q "add_principal -pw password HOST/kdc.linux.contoso.com"
 kadmin.local -q "add_principal -pw password HTTP/localhost"
 kadmin.local -q "add_principal -pw password HTTP/kdc.linux.contoso.com"
+kadmin.local -q "add_principal -pw password HOST/webserver.linux.contoso.com"
 kadmin.local -q "add_principal -pw password NEWSERVICE/localhost"
 
 # Add a subset of SPNs for localhost machine

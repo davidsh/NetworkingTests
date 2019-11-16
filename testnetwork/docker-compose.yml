@@ -1,8 +1,10 @@
-version: "3.5"
+version: "3.7"
 
 services:
   kdc:
-    build: ./kdc
+    build:
+      context: ./
+      dockerfile: ./kdc/Dockerfile
     image: kdc:0.1
     container_name: kdc
     hostname: kdc
@@ -11,15 +13,31 @@ services:
     networks:
           - network1
 
-  linux1:
-    build: ./linux1
-    image: linux1:0.1
-    container_name: linux1
-    hostname: linux1
+  linuxclient:
+    build:
+      context: ./
+      dockerfile: ./linuxclient/Dockerfile
+    image: linuxclient:0.1
+    container_name: linuxclient
+    hostname: linuxclient
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
     networks:
           - network1
+
+  linuxweb:
+    build:
+      context: ./
+      dockerfile: ./linuxweb/Dockerfile
+    image: linuxweb:0.1
+    container_name: linuxweb
+    hostname: linuxweb
+    domainname: linux.contoso.com
+    dns_search: linux.contoso.com
+    networks:
+      network1:
+        aliases:
+          - webserver.linux.contoso.com
 
 networks:
   network1:

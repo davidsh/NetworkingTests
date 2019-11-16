@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
 
-echo "Starting KDC"
-service krb5-kdc restart
-
-#echo "Login with 'defaultcred' user"
-echo password | kinit defaultcred && klist
-
 # Copy and patch files if present
-echo "Patching Microsoft.NETCore.App/3.0.0 files"
-ls -l /patch
-cp -r /patch/. /usr/share/dotnet/shared/Microsoft.NETCore.App/3.0.0
+#echo "Patching Microsoft.NETCore.App/3.0.0 files"
+#ls -l /patch
+#cp -r /patch/. /usr/share/dotnet/shared/Microsoft.NETCore.App/3.0.0
 
 #dotnet test EnterpriseTests/EnterpriseTests.csproj --logger:trx --results-directory /testresults
 
