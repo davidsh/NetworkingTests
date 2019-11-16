@@ -10,8 +10,10 @@ services:
     hostname: kdc
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
+    volumes:
+      - shared-volume:/keytabs
     networks:
-          - network1
+      - network1
 
   linuxclient:
     build:
@@ -23,7 +25,10 @@ services:
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
     networks:
-          - network1
+      - network1
+    depends_on:
+      - linuxweb
+      - kdc
 
   linuxweb:
     build:
@@ -34,11 +39,18 @@ services:
     hostname: linuxweb
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
+    volumes:
+      - shared-volume:/keytabs
     networks:
       network1:
         aliases:
           - webserver.linux.contoso.com
+    depends_on:
+      - kdc
 
 networks:
   network1:
     name: linux.contoso.com
+
+volumes:
+  shared-volume:

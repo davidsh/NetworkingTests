@@ -12,5 +12,12 @@
 # Clear the exit code.
 #exit 0
 
+export ASPNETCORE_URLS="http://+:80;https://+:443"
+export ASPNETCORE_ENVIRONMENT="Development"
+
+cp /keytabs/linuxweb.keytab /etc/krb5.keytab
+cd /webserver
+dotnet run
+
 # Keep the container running
-tail -f /dev/null
+#tail -f /dev/null

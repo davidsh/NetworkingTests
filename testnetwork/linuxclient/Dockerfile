@@ -1,15 +1,16 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-bionic
 
+# environment variables
+ENV DEBIAN_FRONTEND noninteractive
+
 WORKDIR /etc
 COPY ./common/krb5.conf .
 
 WORKDIR /setup
-COPY ./linuxclient/setup-client.sh .
-RUN chmod +x setup-client.sh
-RUN ./setup-client.sh
+COPY ./linuxclient/*.sh ./
+RUN chmod +x *.sh
 
-COPY ./linuxclient/run.sh .
-RUN chmod +x run.sh
+RUN ./setup-client.sh
 
 RUN mkdir /patch
 

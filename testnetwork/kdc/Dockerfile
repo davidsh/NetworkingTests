@@ -1,10 +1,11 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-bionic
 
-WORKDIR /etc/krb5kdc
-COPY ./kdc/kdc.conf .
+# environment variables
+ENV DEBIAN_FRONTEND noninteractive
 
-WORKDIR /etc
-COPY ./common/krb5.conf .
+COPY ./kdc/kadm5.acl /etc/krb5kdc/
+COPY ./kdc/kdc.conf /etc/krb5kdc/
+COPY ./common/krb5.conf /etc/
 
 WORKDIR /setup
 COPY ./kdc/setup-kdc.sh .
