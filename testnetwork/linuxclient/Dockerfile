@@ -14,4 +14,8 @@ RUN ./setup-client.sh
 
 RUN mkdir /patch
 
+COPY ./EnterpriseTests/*.* /EnterpriseTests/
+COPY ./testclients/negclient/*.* /negclient/
+COPY ./testclients/httpclient/*.* /httpclient/
+
 ENTRYPOINT ["/bin/bash", "/setup/run.sh"]

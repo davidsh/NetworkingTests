@@ -6,18 +6,17 @@ ENV DEBIAN_FRONTEND noninteractive
 COPY ./common/krb5.conf /etc/
 
 WORKDIR /setup
-#COPY ./linuxweb/ntlm_user_file .
-COPY ./linuxweb/setup-web.sh /setup/
-RUN chmod +x setup-web.sh
+COPY ./linuxweb/*.sh ./
+RUN chmod +x *.sh
+
 RUN ./setup-web.sh
 
+#COPY ./linuxweb/ntlm_user_file .
 #ENV NTLM_USER_FILE=/setup/ntlm_user_file
-
-COPY ./linuxweb/run.sh /setup/
-RUN chmod +x run.sh
 
 RUN mkdir /patch
 
-COPY ./common/webserver/*.* /webserver/
+COPY ./testservers/webserver/*.* /webserver/
+COPY ./testservers/negserver/*.* /negserver/
 
 ENTRYPOINT ["/bin/bash", "/setup/run.sh"]

@@ -4,7 +4,7 @@ echo "Starting KDC"
 service krb5-kdc restart
 service krb5-admin-server restart
 
-cp /setup/*.keytab /keytabs
+cp /setup/*.keytab /SHARED
 
 #echo "Login with 'defaultcred' user"
 echo password | kinit defaultcred && klist

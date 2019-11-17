@@ -12,10 +12,7 @@
 # Clear the exit code.
 #exit 0
 
-# Test Kerberos connection
-echo password | kinit user1
-curl --verbose --negotiate -u: http://webserver.linux.contoso.com
-kdestroy
+cp /SHARED/linuxclient.keytab /etc/krb5.keytab
 
 # Keep the container running
 tail -f /dev/null

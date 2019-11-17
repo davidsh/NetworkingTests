@@ -11,24 +11,9 @@ services:
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
     volumes:
-      - shared-volume:/keytabs
+      - shared-volume:/SHARED
     networks:
       - network1
-
-  linuxclient:
-    build:
-      context: ./
-      dockerfile: ./linuxclient/Dockerfile
-    image: linuxclient:0.1
-    container_name: linuxclient
-    hostname: linuxclient
-    domainname: linux.contoso.com
-    dns_search: linux.contoso.com
-    networks:
-      - network1
-    depends_on:
-      - linuxweb
-      - kdc
 
   linuxweb:
     build:
@@ -40,12 +25,29 @@ services:
     domainname: linux.contoso.com
     dns_search: linux.contoso.com
     volumes:
-      - shared-volume:/keytabs
+      - shared-volume:/SHARED
     networks:
       network1:
         aliases:
           - webserver.linux.contoso.com
     depends_on:
+      - kdc
+
+  linuxclient:
+    build:
+      context: ./
+      dockerfile: ./linuxclient/Dockerfile
+    image: linuxclient:0.1
+    container_name: linuxclient
+    hostname: linuxclient
+    domainname: linux.contoso.com
+    dns_search: linux.contoso.com
+    volumes:
+      - shared-volume:/SHARED
+    networks:
+      - network1
+    depends_on:
+      - linuxweb
       - kdc
 
 networks:

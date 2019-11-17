@@ -28,7 +28,12 @@ kadmin.local -q "add_principal -pw password user4krb@LINUX.CONTOSO.COM"
 kadmin.local -q "add_principal -pw password HTTP/linuxweb.linux.contoso.com"
 kadmin.local -q "add_principal -pw password HOST/webserver.linux.contoso.com" # This uses a CNAME "webserver"
 kadmin.local -q "add_principal -pw password NEWSERVICE/linuxweb.linux.contoso.com"
+kadmin.local -q "add_principal -pw password NEWSERVICE/localhost"
+kadmin.local -q "add_principal -pw password HOST/linuxclient.linux.contoso.com"
+kadmin.local -q "add_principal -pw password HOST/localhost"
 
-# Add a subset of SPNs for localhost machine
+# Create keytab files for other machines
 kadmin.local ktadd -k /setup/linuxweb.keytab -norandkey HTTP/linuxweb.linux.contoso.com
 kadmin.local ktadd -k /setup/linuxweb.keytab -norandkey HOST/webserver.linux.contoso.com
+kadmin.local ktadd -k /setup/linuxclient.keytab -norandkey HOST/linuxclient.linux.contoso.com
+kadmin.local ktadd -k /setup/linuxclient.keytab -norandkey HOST/localhost
