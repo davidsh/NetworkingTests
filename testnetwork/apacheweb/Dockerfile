@@ -1,7 +1,5 @@
 FROM httpd:2.4
-#COPY ./public-html/ /usr/local/apache2/htdocs/
 
-# environment variables
 ENV DEBIAN_FRONTEND noninteractive
 
 COPY ./common/krb5.conf /etc/

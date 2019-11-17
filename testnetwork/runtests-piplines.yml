@@ -1,0 +1,18 @@
+# Build Docker image for this app, to be published to Docker Registry
+pool:
+  vmImage: 'ubuntu-16.04'
+variables:
+  buildConfiguration: 'Release'
+steps:
+- script: |
+    cd testnetwork
+    docker-compose up -d
+    docker exec linuxclient dotnet test /EnterpriseTests/EnterpriseTests.csproj --logger:trx --results-directory /testresults
+    docker cp linuxclient:/testresults .
+    docker-compose down
+
+- task: PublishTestResults@2
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+    failTaskOnFailedTests: true
