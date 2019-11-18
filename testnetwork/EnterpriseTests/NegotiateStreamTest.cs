@@ -4,6 +4,7 @@
 
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
@@ -77,10 +78,26 @@ namespace System.Net.Security.Tests
             // the 'NEWSERVICE/localhost' SPN is not valid. That SPN, while registered in the overall
             // Kerberos realm, is not registered on this particular server's keytab. So, this test case verifies
             // that SPNEGO won't fallback from Kerberos to NTLM. Instead, it causes an AuthenticationException.
-            new object[] { new NetworkCredential("user1", "password"), "NEWSERVICE/localhost" },
+            //new object[] { new NetworkCredential("user1", "password"), "NEWSERVICE/localhost" },
 
             // Invalid Kerberos credential password.
             new object[] { new NetworkCredential("user1", "passwordxx"), "HOST/localhost" },
         };
+
+        [Theory]
+        [MemberData(nameof(FailureCasesMemberData))]
+        public async Task Client_Authentication_Failure(NetworkCredential creds, string target)
+        {
+            var client = new TcpClient();
+            client.Connect(TestConfiguration.NegotiateServerHost, TestConfiguration.NegotiateServerPort);
+            // Ensure the client does not close when there is still data to be sent to the server.
+            client.LingerState = new LingerOption(true, 0);
+
+            // Request authentication.
+            NetworkStream clientStream = client.GetStream();
+            var authStream = new NegotiateStream(clientStream, false);
+            await Assert.ThrowsAsync<AuthenticationException>(() =>
+                authStream.AuthenticateAsClientAsync(creds, target, ProtectionLevel.EncryptAndSign, TokenImpersonationLevel.Identification));
+        }
     }
 }
