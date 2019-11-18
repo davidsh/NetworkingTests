@@ -8,9 +8,13 @@ steps:
     # Fix up permissions on script
     chmod +x $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
 
-- bash: $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
-  workingDirectory: $(System.DefaultWorkingDirectory)
-  displayName: 'Building and running tests'
+- task: Bash@3
+  inputs:
+    displayName: 'Building and running tests'
+    targetType: 'filePath'
+    filePath: $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
+    arguments: $(System.DefaultWorkingDirectory)
+    workingDirectory: $(System.DefaultWorkingDirectory)
 
 - task: PublishTestResults@2
   inputs:
