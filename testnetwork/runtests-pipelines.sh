@@ -1,4 +1,7 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
+
+# Echo
+set -x
 
 # Clone and build the dotnet/runtime repo (TODO: Wait for repo to become public)
 #git clone https://github.com/dotnet/runtime.git
