@@ -4,6 +4,10 @@ pool:
 variables:
   buildConfiguration: 'Release'
 steps:
+- script: |
+    # Fix up permissions on script
+    chmod +x $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
+
 - bash: $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
   workingDirectory: $(System.DefaultWorkingDirectory)
   displayName: 'Building and running tests'
