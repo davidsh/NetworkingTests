@@ -4,7 +4,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
 steps:
-- bash: $(System.DefaultWorkingDirectory)/runtests-pipelines.sh
+- bash: ./runtests-pipelines.sh
   displayName: 'Building and running tests'
 
 - task: PublishTestResults@2
