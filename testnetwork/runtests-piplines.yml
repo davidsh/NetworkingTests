@@ -8,8 +8,7 @@ steps:
     # Clone and build the dotnet/runtime repo (TODO: Wait for repo to become public)
     #git clone https://github.com/dotnet/runtime.git
     git clone https://github.com/dotnet/corefx.git
-    cd corefx
-    ./build.sh
+    docker run --rm -v ./corefx:/corefx -w /corefx mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-c103199-20180628134544 ./build.sh
 
     # Start up the test network and machine
     cd ../testnetwork
