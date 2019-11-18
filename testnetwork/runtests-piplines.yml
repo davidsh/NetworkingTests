@@ -12,8 +12,9 @@ steps:
     #chmod +x $(System.DefaultWorkingDirectory)/testnetwork/runtests-pipelines.sh
     # Clone and build the dotnet/runtime repo (TODO: Wait for repo to become public)
     #git clone https://github.com/dotnet/runtime.git
+    pwd
     git clone https://github.com/dotnet/corefx.git
-    docker run --rm -v $(System.DefaultWorkingDirectory)/corefx:/corefx -w $(System.DefaultWorkingDirectory)/corefx mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249 ./build.sh
+    docker run --rm -v $(System.DefaultWorkingDirectory)/corefx:/corefx -w /corefx mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249 ./build.sh
 
     # Start up the test network and machine
     #cd testnetwork
