@@ -13,7 +13,7 @@ steps:
     #git clone https://github.com/dotnet/runtime.git /tmp/corefx
     pwd
     git clone https://github.com/dotnet/corefx.git
-    docker run --rm -v /tmp/corefx:/corefx -w /corefx mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249 ./build.sh
+    docker run --rm -v /tmp/corefx:/corefx -w /corefx mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249 /corefx/build.sh
 
     # Start up the test network and machine
     #cd testnetwork
