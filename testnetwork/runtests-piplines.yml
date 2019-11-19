@@ -6,31 +6,30 @@ pool:
 steps:
 - script: |
     # Echo
-    set -x
-
-    pwd
+    #set -x
+    #pwd
     # Clone and build the dotnet/runtime repo (TODO: Wait for repo to become public)
     # Only the /tmp directory on the hosted agent is writable by Docker mounted volumes
     #git clone https://github.com/dotnet/runtime.git /tmp/corefx
     git clone https://github.com/dotnet/corefx.git /tmp/corefx
-    cd /tmp/corefx
-    ./build.sh
+    #cd /tmp/corefx
+    #./build.sh
     #docker run --rm -v /tmp/corefx:/corefx -w /corefx mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249 ./build.sh
     
 
     # Start up the test network and machine
-    #cd testnetwork
-    #docker-compose up -d
+    cd testnetwork
+    docker-compose up -d
 
     # Copy the latest Microsoft.NETCore.App into the client machine
     #docker cp /tmp/corefx/artifacts/bin/testhost/netcoreapp-Linux-Debug-x64/shared/Microsoft.NETCore.App/5.0.0/*.* linuxclient:/usr/share/dotnet/shared/Microsoft.NETCore.App/3.0.0
 
     # Run the client tests and copy the test results of the container
-    #docker exec linuxclient dotnet test /EnterpriseTests/EnterpriseTests.csproj --logger:trx --results-directory /testresults
-    #docker cp linuxclient:/testresults .
+    docker exec linuxclient dotnet test /EnterpriseTests/EnterpriseTests.csproj --logger:trx --results-directory /testresults
+    docker cp linuxclient:/testresults .
 
     # Shut down the test network and machines
-    #docker-compose down
+    docker-compose down
 
 - task: PublishTestResults@2
   inputs:
