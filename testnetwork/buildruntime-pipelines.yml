@@ -1,14 +1,15 @@
+resources:
+  containers:
+  - container: my_container
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249
+
 pool:
   vmImage: 'ubuntu-16.04'
 
-container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-29-helix-09ca40b-20190508143249
+container: my_container
 
 steps:
 - script: |
-    # Echo
-    set -x
-
-    pwd
-    git clone https://github.com/dotnet/corefx.git /corefx
-    cd /corefx
+    git clone https://github.com/dotnet/corefx.git
+    cd corefx
     ./build.sh
