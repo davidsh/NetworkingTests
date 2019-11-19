@@ -5,7 +5,7 @@ services:
     build:
       context: ./
       dockerfile: ./kdc/Dockerfile
-    image: kdc:0.1
+    image: kdc:5.0
     container_name: kdc
     hostname: kdc
     domainname: linux.contoso.com
@@ -19,7 +19,9 @@ services:
     build:
       context: ./
       dockerfile: ./linuxweb/Dockerfile
-    image: linuxweb:0.1
+      args:
+        SDK_BASE_IMAGE: dotnet-runtime:5.0
+    image: linuxweb:5.0
     container_name: linuxweb
     hostname: linuxweb
     domainname: linux.contoso.com
@@ -37,7 +39,7 @@ services:
     build:
       context: ./
       dockerfile: ./apacheweb/Dockerfile
-    image: apacheweb:0.1
+    image: apacheweb:5.0
     container_name: apacheweb
     hostname: apacheweb
     domainname: linux.contoso.com
@@ -56,8 +58,8 @@ services:
       context: ./
       dockerfile: ./linuxclient/Dockerfile
       args:
-        SDK_BASE_IMAGE: sdk-corefx-current:5.0
-    image: linuxclient:0.1
+        SDK_BASE_IMAGE: dotnet-runtime:5.0
+    image: linuxclient:5.0
     container_name: linuxclient
     hostname: linuxclient
     domainname: linux.contoso.com

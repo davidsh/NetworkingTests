@@ -15,6 +15,4 @@ RUN ./setup-kdc.sh
 COPY ./kdc/run.sh .
 RUN chmod +x run.sh
 
-RUN mkdir /patch
-
 ENTRYPOINT ["/bin/bash", "/setup/run.sh"]

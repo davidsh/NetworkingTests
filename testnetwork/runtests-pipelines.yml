@@ -1,22 +1,25 @@
 # Build Docker image for this app, to be published to Docker Registry
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-18.04'
+
 #variables:
-#  buildConfiguration: 'Release'
+#  buildConfiguration: 'Debug'
+
 steps:
 - script: |
-    # Echo
+    # Echo commands to console log
     set -x
 
+    # Build current master branch of corefx
     git clone https://github.com/dotnet/corefx.git corefx
-    docker build -t sdk-corefx-current:5.0 -f testnetwork/corefx.Dockerfile corefx
+    docker build -t dotnet-runtime:5.0 -f testnetwork/corefx.Dockerfile corefx
 
-    # Start up the test network and machine
+    # Start up the test network and machines
     cd testnetwork
     docker-compose build
     docker-compose up -d
 
-    # Run the client tests and copy the test results of the container
+    # Run the client tests and copy the test results from the container
     docker exec linuxclient dotnet test /EnterpriseTests/EnterpriseTests.csproj --logger:trx --results-directory /testresults
     docker cp linuxclient:/testresults .
 

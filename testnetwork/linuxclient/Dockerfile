@@ -13,7 +13,6 @@ RUN chmod +x *.sh
 
 RUN ./setup-client.sh
 
-RUN mkdir /patch
 RUN mkdir /testresults
 
 COPY ./EnterpriseTests/*.* /EnterpriseTests/
