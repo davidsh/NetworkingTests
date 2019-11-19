@@ -1,8 +1,8 @@
 # Build Docker image for this app, to be published to Docker Registry
 pool:
   vmImage: 'ubuntu-16.04'
-variables:
-  buildConfiguration: 'Release'
+#variables:
+#  buildConfiguration: 'Release'
 steps:
 - script: |
     # Echo
