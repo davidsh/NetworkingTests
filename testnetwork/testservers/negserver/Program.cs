@@ -4,6 +4,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Principal;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace negserver
 {
@@ -30,18 +31,7 @@ namespace negserver
                 clientRequest = listener.AcceptTcpClient();
                 Console.WriteLine("client connected.");
 
-                try
-                {
-                    AuthenticateClient(clientRequest);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                finally
-                {
-                    clientRequest.Close();
-                }
+                Task ignored = Task.Run(() => AuthenticateClient(clientRequest));
             }
         }
 
@@ -53,11 +43,7 @@ namespace negserver
 
             try
             {
-                authStream.AuthenticateAsServer(
-                    new NetworkCredential("defaultcred", "password"),
-                    ProtectionLevel.EncryptAndSign,
-                    TokenImpersonationLevel.Identification);
-
+                authStream.AuthenticateAsServer();
                 DisplayProperties(authStream);
 
                 var buffer = new byte[65536];
@@ -82,11 +68,12 @@ namespace negserver
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Client message exception: {e.ToString()}");
+                Console.WriteLine(e);
             }
             finally
             {
                 authStream.Close();
+                clientRequest.Close();
             }
         }
 

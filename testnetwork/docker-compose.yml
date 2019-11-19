@@ -20,7 +20,7 @@ services:
       context: ./
       dockerfile: ./linuxweb/Dockerfile
       args:
-        SDK_BASE_IMAGE: dotnet-runtime:5.0
+        SDK_BASE_IMAGE: ${SDK_BASE_IMAGE:-mcr.microsoft.com/dotnet/core/sdk:3.0.100-bionic}
     image: linuxweb:5.0
     container_name: linuxweb
     hostname: linuxweb
@@ -58,7 +58,7 @@ services:
       context: ./
       dockerfile: ./linuxclient/Dockerfile
       args:
-        SDK_BASE_IMAGE: dotnet-runtime:5.0
+        SDK_BASE_IMAGE: ${SDK_BASE_IMAGE:-mcr.microsoft.com/dotnet/core/sdk:3.0.100-bionic}
     image: linuxclient:5.0
     container_name: linuxclient
     hostname: linuxclient

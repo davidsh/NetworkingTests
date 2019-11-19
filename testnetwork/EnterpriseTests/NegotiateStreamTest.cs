@@ -24,17 +24,17 @@ namespace System.Net.Security.Tests
 
         public static readonly object[][] SuccessCasesMemberData =
         {
-            new object[] { new NetworkCredential("user1", "password"), true, "HOST/localhost" },
-            new object[] { new NetworkCredential("user1", "password"), true, "HOST/linuxclient.linux.contoso.com" },
-            //new object[] { new NetworkCredential("user1", "password"), false, "UNKNOWNHOST/localhost" },
-            //new object[] { new NetworkCredential("user3ntlm", "password"), false, "HOST/localhost" },
-            //new object[] { new NetworkCredential("user3ntlm", "password"), false, "NEWSERVICE/localhost" },
+            new object[] { new NetworkCredential("user1", "password"), true, "HTTP/linuxweb.linux.contoso.com" },
+            new object[] { new NetworkCredential("user1", "password"), false, "UNKNOWNHOST/localhost" },
+            new object[] { new NetworkCredential("ntlmonly", "password"), false, "HOST/localhost" },
+            new object[] { new NetworkCredential("ntlmonly", "password"), false, "NEWSERVICE/localhost" },
             //new object[] { CredentialCache.DefaultNetworkCredentials, true, "HOST/localhost" },
-            //new object[] { CredentialCache.DefaultNetworkCredentials, true, "HOST/kdc.linux.contoso.com" },
+            //new object[] { CredentialCache.DefaultNetworkCredentials, true, "HTTP/linuxweb.linux.contoso.com" },
         };
 
-        [Fact]
-        public async Task Client_ValidCreds_Success()
+        [Theory]
+        [MemberData(nameof(SuccessCasesMemberData))]
+        public async Task Client_ValidCreds_Success(NetworkCredential creds, bool isKerberos, string target)
         {
                 var client = new TcpClient();
                 client.Connect(TestConfiguration.NegotiateServerHost, TestConfiguration.NegotiateServerPort);
@@ -44,15 +44,13 @@ namespace System.Net.Security.Tests
                 // Request authentication.
                 NetworkStream clientStream = client.GetStream();
                 var authStream = new NegotiateStream(clientStream, false);
-                var credential = new NetworkCredential("user1", "password");
-                string target = "HTTP/linuxweb.linux.contoso.com";
                 await authStream.AuthenticateAsClientAsync(
-                    credential,
+                    creds,
                     target,
                     ProtectionLevel.EncryptAndSign,
                     TokenImpersonationLevel.Identification);
 
-                VerifyStreamProperties(authStream, isServer: false, isKerberos: true, target);
+                VerifyStreamProperties(authStream, isServer: false, isKerberos, target);
         }
 
         private void VerifyStreamProperties(NegotiateStream stream, bool isServer, bool isKerberos, string remoteName)
@@ -78,10 +76,10 @@ namespace System.Net.Security.Tests
             // the 'NEWSERVICE/localhost' SPN is not valid. That SPN, while registered in the overall
             // Kerberos realm, is not registered on this particular server's keytab. So, this test case verifies
             // that SPNEGO won't fallback from Kerberos to NTLM. Instead, it causes an AuthenticationException.
-            //new object[] { new NetworkCredential("user1", "password"), "NEWSERVICE/localhost" },
+            new object[] { new NetworkCredential("user2", "password"), "NEWSERVICE/localhost" },
 
             // Invalid Kerberos credential password.
-            new object[] { new NetworkCredential("user1", "passwordxx"), "HOST/localhost" },
+            new object[] { new NetworkCredential("user1", "passwordxx"), "HTTP/linuxweb.linux.contoso.com" },
         };
 
         [Theory]

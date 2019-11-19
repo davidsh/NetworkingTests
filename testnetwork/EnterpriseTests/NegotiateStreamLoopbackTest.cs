@@ -84,7 +84,7 @@ namespace System.Net.Security.Tests
             new object[] { new NetworkCredential("user1", "password"), "NEWSERVICE/localhost" },
 
             // Invalid Kerberos credential password.
-            //new object[] { new NetworkCredential("user1", "passwordxx"), "HOST/localhost" },
+            new object[] { new NetworkCredential("user1", "passwordxx"), "HOST/localhost" },
         };
 
         [Theory]
@@ -106,7 +106,7 @@ namespace System.Net.Security.Tests
                 await Assert.ThrowsAsync<AuthenticationException>(() => server.AuthenticateAsServerAsync());
             }
         }
-/*
+
         [Fact]
         public async Task NegotiateStream_StreamToStream_Successive_ClientWrite_Sync_Success()
         {
@@ -268,7 +268,7 @@ namespace System.Net.Security.Tests
                 Assert.True(task.IsCompleted);
             }
         }
-*/
+
         private void VerifyStreamProperties(NegotiateStream stream, bool isServer, bool isKerberos, string remoteName)
         {
             Assert.True(stream.IsAuthenticated);
@@ -294,7 +294,7 @@ namespace System.Net.Security.Tests
         protected override Task AuthenticateAsServerAsync(NegotiateStream server) =>
             server.AuthenticateAsServerAsync();
     }
-/*
+
     public sealed class NegotiateStreamStreamToStreamTest_Async_TestOverloadNullBinding : NegotiateStreamLoopbackTest
     {
         protected override Task AuthenticateAsClientAsync(NegotiateStream client, NetworkCredential credential, string targetName) =>
@@ -356,5 +356,5 @@ namespace System.Net.Security.Tests
 
         protected override Task AuthenticateAsServerAsync(NegotiateStream server) =>
             Task.Run(() => server.AuthenticateAsServer((NetworkCredential)CredentialCache.DefaultCredentials, ProtectionLevel.EncryptAndSign, TokenImpersonationLevel.Identification));
-    }*/
+    }
 }
