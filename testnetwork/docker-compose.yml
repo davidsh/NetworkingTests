@@ -55,6 +55,8 @@ services:
     build:
       context: ./
       dockerfile: ./linuxclient/Dockerfile
+      args:
+        SDK_BASE_IMAGE: sdk-corefx-current:5.0
     image: linuxclient:0.1
     container_name: linuxclient
     hostname: linuxclient
