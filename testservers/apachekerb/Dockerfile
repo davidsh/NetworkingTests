@@ -11,13 +11,17 @@ RUN chmod +x *.sh
 # Prevents dialog prompting when installing packages
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Install KDC and diagnostic tools
+# Install KDC, apache2 and diagnostic tools
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends krb5-kdc krb5-admin-server iputils-ping dnsutils nano
+    apt-get install -y --no-install-recommends \
+        krb5-kdc krb5-admin-server \
+        apache2 libapache2-mod-auth-kerb \
+        iputils-ping dnsutils nano curl
 
 RUN ./setup-kdc.sh
 
 EXPOSE 88/tcp
 EXPOSE 88/udp
+EXPOSE 80
 
 ENTRYPOINT ["/bin/bash", "/setup/run.sh"]
