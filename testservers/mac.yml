@@ -19,3 +19,7 @@ steps:
 - bash: |
     curl --version
   displayName: Show curl version
+
+- bash: |
+    dotnet --info
+  displayName: Show dotnet versions
