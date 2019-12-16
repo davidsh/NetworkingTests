@@ -1,0 +1,11 @@
+
+pool:
+  vmImage: 'macOS-latest'
+
+steps:
+- bash: |
+    export KRB5_TRACE=/dev/stdout
+    export KRB5_CONFIG=$(System.DefaultWorkingDirectory)/testservers/krb5.conf
+    echo "password" | kinit user1
+    klist
+  displayName: Test kerberos connection
